@@ -12,11 +12,11 @@ class DjangoWStyle(Format):
 
         Example Usage:
         
-        >>> from vectorformats.Formats import Django, GeoJSON
+        >>> from vectorformats.Formats import DjangoWStyle, GeoJSON
         >>> qs = Model.objects.filter(city="Cambridge")
         >>> djf = Django.Django(geodjango="geometry", 
-        						properties=['city', 'state'],
-        						style={'color': '#004070', 'weight': 4})
+                                properties=['city', 'state'],
+                                style={'color': '#004070', 'weight': 4})
         >>> geoj = GeoJSON.GeoJSON()
         >>> string = geoj.encode(djf.decode(qs))
         >>> print string 
@@ -55,6 +55,17 @@ class DjangoWStyle(Format):
     here: http://leaflet.cloudmade.com/examples/geojson.html 
     """
 
+    relation_data = {}
+    """Used to retrieve values and aggregrate data from related models, 
+    which are not direct attributes of res, such as object_set, and 
+    object_set.count() The dictionary should be set up as follows:
+    { 'method' : 'model'}. The results are added to the properties 
+    object as 'model_method' : value.
+    
+    Currently, the only supported key is 'set_count', which 
+    executes object_set.count() on the specified model.
+    """
+
     def decode(self, query_set, generator = False):
         results = []
         for res in query_set:
@@ -79,7 +90,17 @@ class DjangoWStyle(Format):
                     feature.properties[p] = getattr(res, p)
 
             if self.style:
-            	feature.properties['style'] = self.style
+                feature.properties['style'] = self.style
+
+            if self.relation_data:
+                for k,v in self.relation_data.iteritems():
+                    try:
+                        if k == 'set_count':
+                            x = getattr(res,v + '_set')
+                            z = getattr(x,'count')
+                            feature.properties[v + '_' + k] = z()
+                    except AttributeError:
+                        feature.properties[v + '_' + k] = 'AttributeError'
                     
             results.append(feature) 
         return results    
