@@ -93,14 +93,15 @@ class DjangoWStyle(Format):
                 feature.properties['style'] = self.style
 
             if self.relation_data:
-                for k,v in self.relation_data.iteritems():
-                    try:
-                        if k == 'set_count':
-                            x = getattr(res,v + '_set')
-                            z = getattr(x,'count')
-                            feature.properties[v + '_' + k] = z()
-                    except AttributeError:
-                        feature.properties[v + '_' + k] = 'AttributeError'
+                for method,models in self.relation_data.iteritems():
+                        if method == 'set_count':
+                            for model in models:
+                                try:
+                                    result = getattr(res,model + '_set')
+                                    count = getattr(result,'count')
+                                    feature.properties[method + '_' + model] = count()
+                                except AttributeError:
+                                    feature.properties[method + '_' + model] = 'AttributeError'
                     
             results.append(feature) 
         return results    
