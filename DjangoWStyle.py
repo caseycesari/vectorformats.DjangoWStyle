@@ -59,7 +59,7 @@ class DjangoWStyle(Format):
     """Used to retrieve values and aggregrate data from related models, 
     which are not direct attributes of res, such as object_set, and 
     object_set.count() The dictionary should be set up as follows:
-    { 'method' : 'model'}. The results are added to the properties 
+    { 'method' : ['model']}. The results are added to the properties 
     object as 'model_method' : value.
     
     Currently, the only supported key is 'set_count', which 
