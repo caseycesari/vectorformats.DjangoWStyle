@@ -99,9 +99,9 @@ class DjangoWStyle(Format):
                                 try:
                                     result = getattr(res,model + '_set')
                                     count = getattr(result,'count')
-                                    feature.properties[method + '_' + model] = count()
+                                    feature.properties[model + '_' + method] = count()
                                 except AttributeError:
-                                    feature.properties[method + '_' + model] = 'AttributeError'
+                                    feature.properties[model + '_' + method] = 'AttributeError'
                     
             results.append(feature) 
         return results    
