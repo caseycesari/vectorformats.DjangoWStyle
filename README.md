@@ -44,16 +44,16 @@ To get the number of cities in Pennsylvania, you would execute:
 
 To have the city count seralized, DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the following format: 
 	
-	{'method_name': 'model_name'}
+	{'method_name': ['model_a_name','model_b_name']}
 
-__At the moment (v. 0.5.0), the only supported key is 'set_count'.__ For example, following the above example, here is how to get the city count information and serialize it along with the rest of the QuerySet data:
+__At the moment (v. 0.5.0), the only supported key is 'set_count'.__ The value should be a list of models that you want to preform the method on. So, continuing the above example, here is how to get the city count information and serialize it along with the rest of the QuerySet data:
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = Model.objects.filter(state="Pennsylvania")
 	>>> djf = Django.Django(geodjango="geometry", 
 							properties=['name'],
 							style={},
-							relation_data = {'set_count': 'city'})
+							relation_data = {'set_count': ['city']})
 	>>> geoj = GeoJSON.GeoJSON()
 	>>> string = geoj.encode(djf.decode(qs))
 	>>> print string 
@@ -62,6 +62,12 @@ The above code will add the following key/value to the GeoJSON `property` object
 
 	'city_set_count' : 200
 
-If the query fails, which is most likely to be caused by there being no relation between the model being serialized and the specified related model, the output will be:
+If any of the queries fail, which is most likely to be caused by there being no relation between the model being serialized and the specified related model, the output will be:
 	
 	'city_set_count' : 'AttributeError'
+
+If you passed multiple models in the value list, and for example, one of the models is not found, the output would be:
+	
+	'model_a_set_count' : 5,
+	'model_b_set_count' : 'AttributeError',
+	'model_c_set_count'	: 6
