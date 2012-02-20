@@ -34,7 +34,7 @@ DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the f
 
 __At the moment (v. 0.1.0), the only supported keys are `'set_count'` and `'values_list'`.__ The value should be a list of models (or fields for ManyToMany relationships) that you want to preform the method on.
 
-#####set_count#####
+####set_count####
 Assume the following Model setup:
 
 	class Street(models.Model)
@@ -79,7 +79,7 @@ If you passed multiple models in the value list, and for example, one of the mod
 	'model_b_set_count' : 'AttributeError',
 	'model_c_set_count'	: 6
 
-#####values_list#####
+####values_list####
 Specifing 'values_list' as the key in `relation_data` will serialize the fields of a ManyToMany related model. Using the above model setup, here is how to serialize a list of all the associated streets for the city being serialized:
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
