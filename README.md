@@ -1,4 +1,4 @@
-#vectorformats.DjangoWStyle v .0.5.0
+#vectorformats.DjangoWStyle v .0.1.0
 
 ##Overview
 
@@ -28,11 +28,22 @@ For more information on styling GeoJSON layers in Leaflet, see the "Styling Feat
 
 DjangoWStyle can retrieve attributes and aggregate information from related models.
 
+DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the following format: 
+	
+	{'method_name': ['model_a_name','model_b_name']} 
+
+__At the moment (v. 0.1.0), the only supported keys are `'set_count'` and `'values_list'`.__ The value should be a list of models (or fields for ManyToMany relationships) that you want to preform the method on.
+
+#####set_count#####
 Assume the following Model setup:
+
+	class Street(models.Model)
+		name = models.CharField("Name",max_length=100)
 
     class City(models.Model):
 		name = models.CharField("Name",max_length=50)
 		state = models.ForeignKey("State")
+		streets = models.ManyToManyField("Street")
 
 	class State(models.Model):
 		name = models.CharField("Name",max_length=50)
@@ -42,15 +53,11 @@ To get the number of cities in Pennsylvania, you would execute:
 	>>> pa = State.objects.get(name="Pennsylvania")
 	>>> pa.city_set.count()
 
-To have the city count seralized, DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the following format: 
-	
-	{'method_name': ['model_a_name','model_b_name']}
-
-__At the moment (v. 0.5.0), the only supported key is 'set_count'.__ The value should be a list of models that you want to preform the method on. So, continuing the above example, here is how to get the city count information and serialize it along with the rest of the QuerySet data:
+To serialize this information here along with the rest of the State QuerySet data:
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
-	>>> qs = Model.objects.filter(state="Pennsylvania")
-	>>> djf = Django.Django(geodjango="geometry", 
+	>>> qs = State.objects.filter(name="Pennsylvania")
+	>>> djf = DjangoWStyle.DjangoWStyle(geodjango="geometry", 
 							properties=['name'],
 							style={},
 							relation_data = {'set_count': ['city']})
@@ -58,7 +65,7 @@ __At the moment (v. 0.5.0), the only supported key is 'set_count'.__ The value s
 	>>> string = geoj.encode(djf.decode(qs))
 	>>> print string 
 
-The above code will add the following key/value to the GeoJSON `property` object, assuming the count was 200 (just as an example):
+The above code will add the following key/value to the GeoJSON `property` object, assuming the count was 200 (as an example):
 
 	'city_set_count' : 200
 
@@ -71,3 +78,24 @@ If you passed multiple models in the value list, and for example, one of the mod
 	'model_a_set_count' : 5,
 	'model_b_set_count' : 'AttributeError',
 	'model_c_set_count'	: 6
+
+#####values_list#####
+Specifing 'values_list' as the key in `relation_data` will serialize the fields of a ManyToMany related model. Using the above model setup, here is how to serialize a list of all the associated streets for the city being serialized:
+
+	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
+	>>> qs = City.objects.filter(name="Philadelphia")
+	>>> djf = DjangoWStyle.DjangoWStyle(geodjango="geometry", 
+							properties=['name'],
+							style={},
+							relation_data = {'values_list': ['streets']})
+	>>> geoj = GeoJSON.GeoJSON()
+	>>> string = geoj.encode(djf.decode(qs))
+	>>> print string 
+
+__Note that the value is `streets` and not `street`.__ Unlike `set_count`, specify the name of the fields (which should be the pluralized name of the related model) that you want the `value_list` for, and not the model name. Assuming that "Broad St", "Market St", and "Baltimore Ave" are all entries in the Streets model and have a ManyToMany relationship with the City entry "Philadelphia", the above code will add the following to the property object of the GeoJSON output for "Philadelphia":
+	
+	'streets_values_list': [[1,'Broad St'],[2,'Market St'],[3,'Baltimore Ave']]
+
+Or, more generically:
+
+	'fieldname_values_list': [[pk,field1,field2,...],[pk,field1,field2]]
