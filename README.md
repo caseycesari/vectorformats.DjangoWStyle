@@ -17,8 +17,8 @@ Leaflet looks for the key 'style' when parsing a GeoJSON object. It then uses th
 							properties=['city', 'state'],
 							style={'color': '#004070', 'weight': 4})
 	>>> geoj = GeoJSON.GeoJSON()
-	>>> string = geoj.encode(djf.decode(qs))
-	>>> print string 
+	>>> geoj.encode(djf.decode(qs))
+
 
 For a list of the style parameters that Leaflet accepts, visit: http://leaflet.cloudmade.com/reference.html#path-options
 
@@ -53,7 +53,7 @@ To get the number of cities in Pennsylvania, you would execute:
 	>>> pa = State.objects.get(name="Pennsylvania")
 	>>> pa.city_set.count()
 
-To serialize this information here along with the rest of the State QuerySet data:
+To serialize the aggregate count along with the rest of the State QuerySet data:
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = State.objects.filter(name="Pennsylvania")
@@ -62,8 +62,7 @@ To serialize this information here along with the rest of the State QuerySet dat
 							style={},
 							relation_data = {'set_count': ['city']})
 	>>> geoj = GeoJSON.GeoJSON()
-	>>> string = geoj.encode(djf.decode(qs))
-	>>> print string 
+	>>> geoj.encode(djf.decode(qs))
 
 The above code will add the following key/value to the GeoJSON `property` object, assuming the count was 200 (as an example):
 
@@ -89,8 +88,7 @@ Specifing 'values_list' as the key in `relation_data` will serialize the fields 
 							style={},
 							relation_data = {'values_list': ['streets']})
 	>>> geoj = GeoJSON.GeoJSON()
-	>>> string = geoj.encode(djf.decode(qs))
-	>>> print string 
+	>>> geoj.encode(djf.decode(qs))
 
 __Note that the value is `streets` and not `street`.__ Unlike `set_count`, specify the name of the fields (which should be the pluralized name of the related model) that you want the `value_list` for, and not the model name. Assuming that "Broad St", "Market St", and "Baltimore Ave" are all entries in the Streets model and have a ManyToMany relationship with the City entry "Philadelphia", the above code will add the following to the property object of the GeoJSON output for "Philadelphia":
 	
