@@ -1,12 +1,12 @@
-#vectorformats.DjangoWStyle v .0.1.0
+#vectorformats.DjangoWStyle v 0.1.0#
 
-##Overview
+##Overview##
 
 DjangoWStyle is a custom Format for the Python library vectorformats (http://packages.python.org/vectorformats/). DjangoWStyle extends the Django format in two ways:
 1. It adds an arbitrary `style` object to the `property` key. This is useful when working with a mapping library that can process GeoJSON layers (like Leaflet: http://leaflet.cloudmade.com).
 2. It provides a way to get related attributes of a queryset that are not direct attributes of the queryset being serialized (like foo.bar_set.count(), for instance).
 
-##Functionality
+##Functionality##
 
 ###Style
 Leaflet looks for the key 'style' when parsing a GeoJSON object. It then uses the key/value pairs in the style object to style the GeoJSON features on the map. Here is a basic usage example:
