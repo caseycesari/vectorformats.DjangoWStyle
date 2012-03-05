@@ -62,10 +62,12 @@ class DjangoWStyle(Format):
     { 'method' : ['model']}. The results are added to the properties 
     object as 'model_method' : value.
     
-    Currently, the only two supported keys are 'set_count' and 'values_list'
+    Currently, the supported keys are 'set_count', 'values_list' and 'display'
     set_count executes object_set.count() on the specified model.
     values_list executes related_model.values_list for the specified model,
     which should be plural.
+    display gets the display name from a CHOICES object for the specified
+    field (which is specified in place of model)
     """
 
     def decode(self, query_set, generator = False):
@@ -110,6 +112,14 @@ class DjangoWStyle(Format):
                                     result = getattr(res,model)
                                     all_list = list(result.values_list())
                                     feature.properties[model + '_' + method] = all_list
+                                except AttributeError, err:
+                                    feature.properties[model + '_' + method] = 'AttributeError'
+                        if method == 'display' :
+                            for model in models:
+                                try:
+                                    display = 'get_%s_display' % (model)
+                                    result = getattr(res,display)
+                                    feature.properties[model + '_' + method] = result()
                                 except AttributeError, err:
                                     feature.properties[model + '_' + method] = 'AttributeError'
                     
