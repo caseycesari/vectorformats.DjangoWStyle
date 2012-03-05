@@ -1,4 +1,4 @@
-#vectorformats.DjangoWStyle v 0.1.0#
+#vectorformats.DjangoWStyle v 0.2.0#
 
 ##Overview##
 
@@ -32,13 +32,20 @@ DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the f
 	
 	{'method_name': ['model_a_name','model_b_name']} 
 
-__At the moment (v. 0.1.0), the only supported keys are `'set_count'` and `'values_list'`.__ The value should be a list of models (or fields for ManyToMany relationships) that you want to preform the method on.
+__At the moment (v. 0.2.0), the only supported keys are `'set_count'`, `'values_list'` and `'display'`.__ The value should be a list of models (or fields for ManyToMany relationships) that you want to preform the method on.
 
 ####set_count####
 Assume the following Model setup:
 
 	class Street(models.Model)
 		name = models.CharField("Name",max_length=100)
+
+		SUFFIX_CHOICES = (
+			('ave','Avenue'),
+			('st','Street'),
+			('rd','Road'))
+
+		suffix=models.CharField("Street Postfix",max_length=10,choices=SUFFIX_CHOICES)
 
     class City(models.Model):
 		name = models.CharField("Name",max_length=50)
@@ -90,10 +97,26 @@ Specifing 'values_list' as the key in `relation_data` will serialize the fields 
 	>>> geoj = GeoJSON.GeoJSON()
 	>>> geoj.encode(djf.decode(qs))
 
-__Note that the value is `streets` and not `street`.__ Unlike `set_count`, specify the name of the fields (which should be the pluralized name of the related model) that you want the `value_list` for, and not the model name. Assuming that "Broad St", "Market St", and "Baltimore Ave" are all entries in the Streets model and have a ManyToMany relationship with the City entry "Philadelphia", the above code will add the following to the property object of the GeoJSON output for "Philadelphia":
+__Note that the value is `streets` and not `street`.__ Unlike `set_count`, specify the name of the fields (which should be the pluralized name of the related model) that you want the `value_list` for, and not the model name. Assuming that "Broad", "Market", and "Baltimore" are all entries in the Streets model and have a ManyToMany relationship with the City entry "Philadelphia", the above code will add the following to the `property` object of the GeoJSON output for "Philadelphia":
 	
-	'streets_values_list': [[1,'Broad St'],[2,'Market St'],[3,'Baltimore Ave']]
+	'streets_values_list': [[1,'Broad'],[2,'Market'],[3,'Baltimore']]
 
 Or, more generically:
 
 	'fieldname_values_list': [[pk,field1,field2,...],[pk,field1,field2]]
+
+####display####
+The `display` method is used to retrieve the display name from a `CHOICES` tuple. Using the above model setp, if you wanted to retrieve the display name of the street suffix for the entry "Broad":
+	
+	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
+	>>> qs = Street.objects.filter(name="Broad")
+	>>> djf = DjangoWStyle.DjangoWStyle(geodjango="geometry", 
+							properties=['name'],
+							style={},
+							relation_data = {'display': ['suffix']})
+	>>> geoj = GeoJSON.GeoJSON()
+	>>> geoj.encode(djf.decode(qs))
+
+This will add the following to the GeoJSON `property` object of the GeoJSON output for "Broad":
+	
+	'suffix_display': 'Avenue'
