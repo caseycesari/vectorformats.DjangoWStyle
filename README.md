@@ -32,7 +32,7 @@ DjangoWStyle provides a `relation_data` kwarg that expects a dictionary in the f
 	
 	{'method_name': ['model_a_name','model_b_name']} 
 
-__At the moment (v. 0.2.0), the only supported keys are `'set_count'`, `'values_list'` and `'display'`.__ The value should be a list of models (or fields for ManyToMany relationships) that you want to preform the method on.
+__At the moment (v. 0.2.0), the supported keys are `'set_count'`, `'values_list'` and `'display'`; which are documented below.__ The value for each method should be a list of models (or field names depending on which method you are using) that you want to preform the method on.
 
 ####set_count####
 Assume the following Model setup:
@@ -106,7 +106,7 @@ Or, more generically:
 	'fieldname_values_list': [[pk,field1,field2,...],[pk,field1,field2]]
 
 ####display####
-The `display` method is used to retrieve the display name from a `CHOICES` tuple. Using the above model setp, if you wanted to retrieve the display name of the street suffix for the entry "Broad":
+The `display` method is used to retrieve the display name from a `CHOICES` tuple. Using the above model setup, if you wanted to retrieve the display name of the street suffix for the entry "Broad":
 	
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = Street.objects.filter(name="Broad")
@@ -117,6 +117,6 @@ The `display` method is used to retrieve the display name from a `CHOICES` tuple
 	>>> geoj = GeoJSON.GeoJSON()
 	>>> geoj.encode(djf.decode(qs))
 
-This will add the following to the GeoJSON `property` object of the GeoJSON output for "Broad":
+Assuming the suffix value for the entry "Broad" was "st", the above code will add the following to the `property` object of the GeoJSON output for "Broad":
 	
-	'suffix_display': 'Avenue'
+	'suffix_display': 'Street'
