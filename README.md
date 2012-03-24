@@ -13,7 +13,7 @@ Leaflet looks for the key 'style' when parsing a GeoJSON object. It then uses th
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = Model.objects.filter(city="Cambridge")
-	>>> djf = Django.Django(geodjango="geometry", 
+	>>> djf = DjangoWStyle.DjangoWStyle(geodjango="geometry", 
 							properties=['city', 'state'],
 							style={'color': '#004070', 'weight': 4})
 	>>> geoj = GeoJSON.GeoJSON()
@@ -46,21 +46,24 @@ Assume the following Model setup:
 			('rd','Road'))
 
 		suffix=models.CharField("Street Postfix",max_length=10,choices=SUFFIX_CHOICES)
+		geometry = models.LineStringField()
 
-    class City(models.Model):
+  	class City(models.Model):
 		name = models.CharField("Name",max_length=50)
 		state = models.ForeignKey("State")
 		streets = models.ManyToManyField("Street")
+		geometry = models.PointField()
 
 	class State(models.Model):
 		name = models.CharField("Name",max_length=50)
+		geometry = models.PolygonField()
 
 To get the number of cities in Pennsylvania, you would execute:
 	
 	>>> pa = State.objects.get(name="Pennsylvania")
 	>>> pa.city_set.count()
 
-To serialize the aggregate count along with the rest of the State QuerySet data:
+To serialize the aggregate count along with the rest of the State QuerySet data for Pennsylvania:
 
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = State.objects.filter(name="Pennsylvania")
@@ -79,7 +82,7 @@ If any of the queries fail, which is most likely to be caused by there being no 
 	
 	'city_set_count' : 'AttributeError'
 
-If you passed multiple models in the value list, and for example, one of the models is not found, the output would be:
+If you passed multiple models in the value list, and for example, one of the models is not found, the output will be:
 	
 	'model_a_set_count' : 5,
 	'model_b_set_count' : 'AttributeError',
@@ -103,10 +106,10 @@ __Note that the value is `streets` and not `street`.__ Unlike `set_count`, speci
 
 Or, more generically:
 
-	'fieldname_values_list': [[pk,field1,field2,...],[pk,field1,field2]]
+	'fieldname_values_list': [[pk,field1,field2,...],[pk,field1,field2,...]]
 
 ####display####
-The `display` method is used to retrieve the display name from a `CHOICES` tuple. Using the above model setup, if you wanted to retrieve the display name of the street suffix for the entry "Broad":
+The `display` method is used to retrieve the display name from a `CHOICES` tuple. Using the model setup noted above, if you wanted to retrieve the display name of the street suffix for the entry "Broad":
 	
 	>>> from vectorformats.Formats import DjangoWStyle, GeoJSON
 	>>> qs = Street.objects.filter(name="Broad")
